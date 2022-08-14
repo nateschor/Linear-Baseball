@@ -92,3 +92,4 @@ df <- list(df_salary, df_position, df_team) %>%
     if_all(everything(), ~ !is.na(.))
   )
 
+write_csv(df, "data/derived/merged_players.csv")
