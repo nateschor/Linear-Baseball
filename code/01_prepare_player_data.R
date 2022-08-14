@@ -8,14 +8,13 @@ df_2021 <- read_fst("data/raw/all_data.fst") %>%
   filter(year_ID == 2021) %>% 
   glimpse()
 
-
 # Salary ------------------------------------------------------------------
 
 df_salary <- df_2021 %>% 
   group_by(player_name) %>% 
   summarize(
-    salary = sum(salary),
-    bwar = sum(bwar162)
+    salary = sum(salary, na.rm = TRUE),
+    bwar = sum(bwar162, na.rm = TRUE)
   ) %>% 
   filter(
     if_all(c(salary, bwar), ~ !is.na(.))
@@ -37,6 +36,7 @@ df_pitcher_position <- df_2021 %>%
     player_name,
     position = if_else(starts / g_pitch >= .5, "SP", "RP")
   ) %>% 
+  filter(player_name != "Shohei Ohtani") %>% 
   print()
 
 df_fielder_position <- df_2021 %>% 
@@ -50,10 +50,11 @@ df_fielder_position <- df_2021 %>%
                names_to = "position", 
                values_to = "games_played", 
                names_prefix = "gms_") %>%
+  filter(position != "OF") %>% 
   group_by(player_name) %>% 
   slice_max(games_played, with_ties = FALSE, n = 1) %>% 
-  ungroup() %>% 
-  filter(position %in% c("C", "1B", "2B", "3B", "SS", "OF", "DH")) %>% 
+  ungroup() %>%
+  filter(position %in% c("C", "1B", "2B", "3B", "SS", "CF", "LF", "RF", "DH")) %>%
   select(player_name, position) %>% 
   anti_join(df_pitcher_position, by = "player_name") %>% 
   print()
