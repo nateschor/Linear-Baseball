@@ -4,7 +4,6 @@
 
 # Session Data files
 .RData
-*.csv
 *.fst
 Linear-Baseball.Rproj
 
