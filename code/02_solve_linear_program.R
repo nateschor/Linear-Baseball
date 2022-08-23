@@ -134,55 +134,9 @@ df_lp_solved <- map_dfr(df_payroll$Team, ~ Solve_Team_LP(.), .id = "team_id") %>
       Team == "W. Sox" ~ "CHW", 
       Team == "Yankees" ~ "NYY"
     )
-) 
+) %>% 
+  rename(actual_team = team) %>% 
+  select(-Team) %>% 
+  print()
 
-df_lp_solved %>% 
-  filter(optimal_team == team) %>% 
-  group_by(optimal_team) %>% 
-  summarize(
-    n = n()
-  ) %>% 
-  arrange(desc(n))
-    
-df_player_picked_pct <- df_lp_solved %>% 
-  group_by(player_name) %>% 
-  summarize(
-    pct = n() / nrow(df_payroll)
-  ) 
-  
-ggplot(data = df_player_picked_pct, aes(x = pct, y = reorder(player_name, pct))) +
-  theme_minimal() +
-  theme(
-    panel.grid.minor = element_blank(),
-    panel.grid.major.y = element_blank()
-  ) +
-  geom_col(fill = "blue", color = "black") +
-  geom_text(aes(label = round(pct, 2)), nudge_x = .04) +
-  scale_x_continuous(label = scales::percent, expand = expansion(0, 0)) +
-  labs(x = "Percentage of Teams Selecting Player",
-       y = "Player") 
-
-
-df_salary_bwar <- df_lp_solved %>% 
-  group_by(Team) %>% 
-  summarize(
-    Total_Salary = sum(salary),
-    Total_bwar = sum(bwar)
-  )
-
-ggplot(data = df_salary_bwar, aes(x = Total_Salary, y = Total_bwar)) +
-  geom_smooth(se = FALSE) +
-  geom_point() +
-  theme_minimal() +
-  scale_x_continuous(label = scales::dollar) +
-  labs(
-    x = "Team Total Dollars Spent",
-    y = "Team Total BWAR"
-  ) +
-  theme(
-    panel.grid = element_blank()
-  )
-
-
-
-
+write_csv(df_lp_solved, "data/derived/lp_solved.csv")
