@@ -14,10 +14,11 @@ df_salary <- df_2021 %>%
   group_by(player_name) %>% 
   summarize(
     salary = sum(salary, na.rm = TRUE),
-    bwar = sum(bwar162, na.rm = TRUE)
+    bwar = sum(bwar162, na.rm = TRUE),
+    pwar = sum(pwar162, na.rm = TRUE)
   ) %>% 
   filter(
-    if_all(c(salary, bwar), ~ !is.na(.))
+    if_all(c(salary, bwar, pwar), ~ !is.na(.))
   ) %>% 
   print()
 
@@ -91,6 +92,22 @@ df <- list(df_salary, df_position, df_team) %>%
   reduce(full_join, by = "player_name") %>% 
   filter(
     if_all(everything(), ~ !is.na(.))
-  )
+  ) %>% 
+  mutate(
+    grouped_position = case_when(
+      position %in% c("1B", "2B", "SS", "3B") ~ "IF",
+      position %in% c("LF", "CF", "RF") ~ "OF",
+      TRUE ~ position
+    ),
+    position = if_else(player_name == "Anthony Rizzo", "1B", position),
+    grouped_position = if_else(player_name == "Anthony Rizzo", "IF", grouped_position)
+  ) %>% 
+  filter(salary > 0) %>%  
+  pivot_longer(., c(bwar, pwar), names_to = "war_type", values_to = "war_value") %>% 
+  filter((grouped_position %in% c("SP", "RP") & war_type == "pwar") |
+           (! grouped_position %in% c("SP", "RP") & war_type == "bwar")) %>%
+  select(-war_type) %>% 
+  print()
 
 write_csv(df, "data/derived/merged_players.csv")
+ 
