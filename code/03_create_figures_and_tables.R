@@ -133,8 +133,11 @@ df_lp %>%
     "Player" = player_name,
     "Teams Picked" = n
   ) %>% 
-  kable(., format = "latex", caption = "Number of teams(max of 30) selecting player for their optimal roster") %>% 
-  kable_styling(., bootstrap_options = "striped") %>% 
+  kable(., format = "latex", caption = "Number of teams (max of 30) selecting a given player for their optimal roster", 
+        escape = TRUE, align = c("cc")) %>% 
+  kable_styling(., latex_options = "striped") %>% 
+  column_spec(., 1, border_left = TRUE) %>% 
+  column_spec(., 2, border_right = TRUE) %>% 
   save_kable(., paste0(path_tables, "teams_picked.tex"))
 
 v_teams <- df_players %>% 
@@ -154,11 +157,14 @@ df_optimal_equal_actual <- df_optimal_equal_actual %>%
   ) %>% 
   rename(
     Team = optimal_team,
-    "Number of Players on both Actual and Optimal Team" = n
+    "Number of Players" = n
   )
         
-kable(df_optimal_equal_actual, format = "latex") %>% 
-  kable_styling(., bootstrap_options = "striped") %>% 
+kable(df_optimal_equal_actual, format = "latex", align = c("lc"),
+      caption = "For each team, the number of players selected for their optimal team who are also on their actual team") %>% 
+  kable_styling(., latex_options = "striped") %>% 
+  column_spec(., 1, border_left = TRUE) %>% 
+  column_spec(., 2, width = "10em", border_right = TRUE) %>% 
   save_kable(., paste0(path_tables, "num_players_actual_and_optimal.tex"))        
   
 Save_Optimal_Roster <- function(team) {
@@ -172,7 +178,7 @@ Save_Optimal_Roster <- function(team) {
       JEFFBAGWELL = bwar,
       Salary = salary
     ) %>% 
-    kable(., format = "latex", caption = paste("Optimal team for", team)) %>% 
+    kable(., format = "latex", caption = paste("Optimal team for", team), escape = TRUE) %>% 
     kable_styling(., bootstrap_options = "striped") %>% 
     save_kable(., paste0(path_tables, team, "_optimal_team.tex"))  
 }
