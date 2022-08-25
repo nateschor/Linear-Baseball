@@ -60,42 +60,59 @@ To clean the player dataset, we first assign positions to each player. A player'
 \subsection{Solving the Optimization Problem}
 
 The decision variables ($x_{i}$) are which MLB players will be selected for each team. $x_{i}$ is a binary variable that equal 1 if player \emph{i} is chosen, and 0 if they are not. The objective function is to maximize the JB for each of the 30 teams (T):
-
-max $\sum_{i = 1}^{N} x_{i} * JB_{i}$ where \emph{N} is the total number of eligible players in 2021.
+\begin{equation}
+\sum_{i = 1}^{N} x_{i} * JB_{i}
+\end{equation} where \emph{N} is the total number of eligible players in 2021.
 
 subject to the following constraints:
 
-$\sum_{i = 1}^{N} x_{i} = 25$
+\begin{equation}
+\sum_{i = 1}^{N} x_{i} = 25
+\end{equation}
+\begin{equation}
+\forall x \in SP:  \sum_{i = 1}^{N} x_{i} = 5
+\end{equation}
+\begin{equation}
+\forall x \in RP:  \sum_{i = 1}^{N} x_{i} = 7 
+\end{equation}
+\begin{equation} 
+\forall x \in CF:  \sum_{i = 1}^{N} x_{i} \geq 1
+\end{equation}
+\begin{equation} 
+\forall x \in RF:  \sum_{i = 1}^{N} x_{i} \geq 1 
+\end{equation}
+\begin{equation} 
+\forall x \in LF:  \sum_{i = 1}^{N} x_{i} \geq 1 
+\end{equation}
+\begin{equation} 
+\forall x \in 2B:  \sum_{i = 1}^{N} x_{i} \geq 1 
+\end{equation}
+\begin{equation} 
+\forall x \in 3B:  \sum_{i = 1}^{N} x_{i} \geq 1
+\end{equation} 
+\begin{equation} 
+\forall x \in 1B:  \sum_{i = 1}^{N} x_{i} \geq 1 
+\end{equation}
+\begin{equation} 
+\forall x \in SS:  \sum_{i = 1}^{N} x_{i} \geq 1 
+\end{equation}
+\begin{equation} 
+\forall x \in C:  \sum_{i = 1}^{N} x_{i} = 2 
+\end{equation}
+\begin{equation}
+\forall x \in DH:  \sum_{i = 1}^{N} x_{i} = 1 
+\end{equation}
+\begin{equation} 
+\forall x \in IF:  \sum_{i = 1}^{N} x_{i} = 5 
+\end{equation}
+\begin{equation} 
+\forall x \in OF:  \sum_{i = 1}^{N} x_{i} = 5
+\end{equation}
+\begin{equation}
+\sum_{i = 1}^{N} x_{i} * x_{salary} \leq T_{salary}
+\end{equation}
 
-$\forall x \in SP:  \sum_{i = 1}^{N} x_{i} = 5$ 
- 
-$\forall x \in RP:  \sum_{i = 1}^{N} x_{i} = 7$ 
- 
-$\forall x \in CF:  \sum_{i = 1}^{N} x_{i} \geq 1$ 
- 
-$\forall x \in RF:  \sum_{i = 1}^{N} x_{i} \geq 1$ 
- 
-$\forall x \in LF:  \sum_{i = 1}^{N} x_{i} \geq 1$ 
- 
-$\forall x \in 2B:  \sum_{i = 1}^{N} x_{i} \geq 1$ 
- 
-$\forall x \in 3B:  \sum_{i = 1}^{N} x_{i} \geq 1$ 
- 
-$\forall x \in 1B:  \sum_{i = 1}^{N} x_{i} \geq 1$ 
- 
-$\forall x \in SS:  \sum_{i = 1}^{N} x_{i} \geq 1$ 
- 
-$\forall x \in C:  \sum_{i = 1}^{N} x_{i} = 2$ 
-
-$\forall x \in DH:  \sum_{i = 1}^{N} x_{i} = 1$ 
- 
-$\forall x \in IF:  \sum_{i = 1}^{N} x_{i} = 5$ 
- 
-$\forall x \in OF:  \sum_{i = 1}^{N} x_{i} = 5$ 
-
-$\sum_{i = 1}^{N} x_{i} * x_{salary} \leq T_{salary}$
-
-Each team must have 25 players and spend no more on players than they did in the actual 2021 season. 
+Equation (2) constrains each team to have exactly 25 players. Equations (3)-(15) stipulate the number of players at each position and the total number of players allowed for grouped positions. (16) requires that each team spend no more on players than they did in the actual 2021 season. 
 
 
 %\begin{table}
@@ -119,6 +136,8 @@ Each team must have 25 players and spend no more on players than they did in the
 \end{figure}
 
 \section{Computational Experiment and Results}
+
+
 
 \begin{figure}[h]
 \caption{Scatterplots of a Team's Total JEFFBAGWELL vs. Total Dollars Spent for the Actual Team (Left)and Optimal Team (Right). The Red and Blue lines are constructed using LOESS.} 
