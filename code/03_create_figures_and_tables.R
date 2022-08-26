@@ -97,13 +97,14 @@ Plot_WAR_VS_SALARY <- function(actual_or_optimal) {
     geom_smooth(aes(x = total_salary, y = total_war), color = line_color, se = FALSE) +
     geom_point(aes(x = total_salary, y = total_war)) +
     theme_minimal() +
-    scale_x_continuous(label = scales::dollar, breaks = seq(0, 300E6, 50E6)) +
+    scale_x_continuous(label = scales::dollar) + #, breaks = seq(0, 300E6, 50E6)) +
     labs(
       x = "Team Total Dollars Spent",
       y = "Team Total JEFFBAGWELL"
     ) +
     theme(
-      panel.grid = element_blank()
+      panel.grid = element_blank(),
+      axis.text.x = element_text(face = "bold", size = 10)
     )
 }
 
@@ -121,7 +122,8 @@ ggsave(paste0(path_plots, "salary_hist.png"), p_salary_hist)
 ggsave(paste0(path_plots, "war_hist.png"), p_war)
 ggsave(paste0(path_plots, "salary_position_boxplots.png"), p_salary_position)
 ggsave(paste0(path_plots, "war_position_boxplots.png"), p_war_position)
-ggsave(paste0(path_plots, "bwar_salary_scatter_cowplot.png"), p_bwar_salary_cowplot)
+ggsave(paste0(path_plots, "bwar_salary_scatter_cowplot.png"), p_war_salary_cowplot, 
+       width = 3500, height = 1500, units = "px")
 
 # Tables ------------------------------------------------------------------
 
@@ -175,7 +177,7 @@ Save_Optimal_Roster <- function(team) {
       `Actual Team` = actual_team,
       Player = player_name,
       Position = position, 
-      JEFFBAGWELL = bwar,
+      JEFFBAGWELL = war_value,
       Salary = salary
     ) %>% 
     kable(., format = "latex", caption = paste("Optimal team for", team), escape = TRUE) %>% 
