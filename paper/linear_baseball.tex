@@ -45,7 +45,7 @@
 
 The purpose of this research is to investigate the relationship between salary and team performance in Major League Baseball (MLB). We do this by looking at actual outcomes for MLB teams in 2021 and compare those results to optimal rosters using linear programming. Our goal is to analyze the gap between current team performance and their potential optimal performance. 
 
-We begin with 2021 salary data for each MLB team. This data is supplemented it with each player's 2021 salary, team, position, and JEFFBAGWELL (our performance metric, abbreviated JB). Next, we seek to maximize JEFFBAGWELL for each of the 30 teams subject to salary and player position constraints, and visualize the results. 
+We begin with 2021 salary data for each MLB team. This data is supplemented it with each player's 2021 salary, team, position, and JEFFBAGWELL (our performance metric, abbreviated JB). \textbf{SAY MORE ABOUT WHAT IT IS/WAR IS} Next, we seek to maximize JEFFBAGWELL for each of the 30 teams subject to salary and player position constraints, and visualize the results. 
 
 \section{Literature Review}
 
@@ -56,6 +56,28 @@ The relationship between spending and performance is common in both the public b
 \subsection{Data Cleaning}
 
 To clean the player dataset, we first assign positions to each player. A player's position is characterized as the position they played most frequently during the season (if they played two positions an equal amount of times, their position was randomly assigned to one of the two positions). Player's with a \$0 salary or a missing salary are removed. A pitcher is classified as a Starting Pitcher (SP) if $\geq$ 50\% of their appearances were as a starter, and otherwise are classified as a Relief Pitcher (RP). Furthermore, First Basemen (1B), Second Basemen (2B), Third Basemen (3B), and Shortstops (SS) are classified as Infielders (IF). Left Fielders (LF), Center Fielders (CF), and Right Fielders (RF) are classified as Outfielders (OF). Catchers (C) and Designated Hitters (DH) are left as their own individual categories. 
+
+\subsection{Motivating Figures}
+
+Baseball teams need to make important decisions about which players to have on their team, and how much to pay them. An interesting aspect is that each position is not equally valuable to creating a winning team, and, consequently, players at different positions have varying salaries (controlling for skill level). 
+
+In Figure \ref{fig:salary_position_boxplot}, we see how salary varies by position. The median salary for a starting pitcher is around \$5,000,000 while the median salary for a relief pitcher is closer to \$1,000,000. The salary distributions also vary drastically within infield and outfield positions. Starting Pitchers and Relief Pitchers also have the largest number of outliers.
+
+\begin{figure}[H]
+\caption{Boxplot of Salary (for Players with Salary $> 0$) by Position}
+\label{fig:salary_position_boxplot}
+\centering
+\includegraphics[width=0.7\paperwidth, scale=1.25]{salary_position_boxplots.png}
+\end{figure}
+
+It is interesting to compare this with Figure \ref{fig:war_position_boxplot}. C and RF have the lowest median in both. However, IF and OF are much closer together. This suggests a potential discrepancy between how much players are valued and how much they are paid. 
+
+\begin{figure}[H]
+\caption{Boxplot of JEFFBAGWELL by Position}
+\label{fig:war_position_boxplot}
+\centering
+\includegraphics[width=0.7\paperwidth, scale=1.25]{war_position_boxplots.png}
+\end{figure}
 
 \subsection{Solving the Optimization Problem}
 
@@ -117,26 +139,15 @@ Equation (2) constrains each team to have exactly 25 players. Equations (3)-(15)
 
 %\begin{table}
 %\caption{Number of Players who are on both the Optimal and Actual Teams}
-%\label{tab:optimal_and_actual}
+\label{tab:optimal_and_actual}
 \input{tables/num_players_actual_and_optimal.tex}
 %\end{table}
 
-\begin{figure}[h]
-\caption{Boxplot of Salary (for Players with Salary $> 0$) by Position}
-\label{fig:salary_position_boxplot}
-\centering
-\includegraphics[width=0.7\paperwidth, scale=1.25]{salary_position_boxplots.png}
-\end{figure}
-
-\begin{figure}[h]
-\caption{Boxplot of JEFFBAGWELL by Position}
-\label{fig:salary_war_boxplot}
-\centering
-\includegraphics[width=0.7\paperwidth, scale=1.25]{war_position_boxplots.png}
-\end{figure}
-
 \section{Computational Experiment and Results}
 
+We solve the constrained optimization problem for all 30 teams to generate each team's optimal 25 player roster. In Table \ref{tab:optimal_and_actual}, we see there are 5 players who are chosen for each team, and 18 players who are chosen more than 20 times. In Table \ref{tab:teams_picked}, we see that teams have at most 3 players who were on both their actual and optimal teams. The modal amount of players to have on both the optimal and actual team is 0. 
+
+In Figure \ref{fig:cowplot}, we sum the salary and JB for each of the actual 30 teams' rosters' in the graph on the left, and we sum the salary and JB for each of the 30 optimized teams' rosters' on the right. Each point represents a team.
 
 
 \begin{figure}[h]
@@ -155,6 +166,29 @@ Equation (2) constrains each team to have exactly 25 players. Equations (3)-(15)
 
 \section{Discussion and Conclusions}
 
+\subsection{Actual vs. Optimal Plots}
+
+The shape of the two graphs in Figure \ref{fig:cowplot} is interesting. The points on the left are relatively scattered, but with a general upward trend--JB and dollars spent are positively correlated. With the smoother, we see that there is a roughly linear relationship up until the salary hits \$100,000. JB then \emph{decreases} up until \$150,000, where it then continues to increase in a concave upwards fashion.
+
+Nearly all the points on the right fall along a single curve that is almost entirely non-decreasing, and roughly linear up until around \$200,000. 
+
+Some takeaways from examining these two curves:
+\begin{singlespace}
+\begin{itemize}
+	\item{The marginal value of a player is non-constant}
+	\item{Almost all teams that are at the bottom of the spending distribution would benefit from spending to acquire higher JB players, but additional spending is not worthwhile for teams at the top of the distribution}
+	\item{Teams can use their current status (left curve) and their optimal status (right curve) to find a more favorable location that is between the two curves}
+\end{itemize}
+\end{singlespace}
+
+\subsection{Actual vs. Optimal Table}
+
+It is surprising how few players are on the same actual and optimal team in \ref{tab:optimal_and_actual}. This table gives a rough sense of bargain star power for each team. Assuming that players are paid what they are worth (which often does not happen until free agency), the high costs might not offset the increase in JB. Teams are able to have the most desirable combination of high JB and low cost by developing or acquiring players \emph{before} they have attained star level, since they then pay a premium. 
+
+\section{Limitations}
+
+There are a number of limitations for this work. The metric JB is an imperfect measure of player performance. Teams know \emph{ex ante} how much they will pay a player for the season, but they do not know what the player's performance will be prior to the season. We also use data only for the 2021 season and thus only have 30 data points for teams. It is possible that the relationship between JB and salary varies by season, and that is left as an area for future work. 
+
 %\begin{figure}[h]
 %    \caption{Ontology for \emph{Hamilton}. \label{fig:ontology}}
 %    \centering
@@ -166,20 +200,21 @@ Equation (2) constrains each team to have exactly 25 players. Equations (3)-(15)
 
 \section{Appendix}
 
-\begin{figure}[h]
+\begin{figure}[t]
 \caption{Histogram of Salary for Players with Salary $> 0$}
 \label{fig:salary_hist}
 \centering
 \includegraphics[width=0.7\paperwidth, scale=1.25]{salary_hist.png}
 \end{figure}
 
-\begin{figure}[h]
+\begin{figure}[t]
 \caption{Histogram of JEFFBAGWELL}
 \label{fig:bwar_hist}
 \centering
 \includegraphics[width=0.7\paperwidth, scale=1.25]{war_hist.png}
 \end{figure}
 
+\label{tab:teams_picked}
 \input{tables/teams_picked.tex}
 
 \end{document}
