@@ -98,40 +98,40 @@ subject to the following constraints:
 \sum_{i = 1}^{N} x_{i} = 25
 \end{equation}
 \begin{equation}
-\forall x \in SP:  \sum_{i = 1}^{N} x_{i} = 5
+\sum_{i = 1}^{N} x_{i} = 5 \quad \forall x_i \in SP
 \end{equation}
 \begin{equation}
-\forall x \in RP:  \sum_{i = 1}^{N} x_{i} = 7 
+\sum_{i = 1}^{N} x_{i} = 7 \quad \forall x_i \in RP
 \end{equation}
 \begin{equation} 
-\forall x \in CF:  \sum_{i = 1}^{N} x_{i} \geq 1
+\sum_{i = 1}^{N} x_{i} \geq 1 \quad \forall x_i \in CF
 \end{equation}
 \begin{equation} 
-\forall x \in RF:  \sum_{i = 1}^{N} x_{i} \geq 1 
+\sum_{i = 1}^{N} x_{i} \geq 1 \quad \forall x_i \in RF
 \end{equation}
 \begin{equation} 
-\forall x \in LF:  \sum_{i = 1}^{N} x_{i} \geq 1 
+\sum_{i = 1}^{N} x_{i} \geq 1 \quad \forall x_i \in LF
 \end{equation}
 \begin{equation} 
-\forall x \in 2B:  \sum_{i = 1}^{N} x_{i} \geq 1 
+\sum_{i = 1}^{N} x_{i} \geq 1 \quad \forall x_i \in 2B
 \end{equation}
 \begin{equation} 
-\forall x \in 3B:  \sum_{i = 1}^{N} x_{i} \geq 1
+\sum_{i = 1}^{N} x_{i} \geq 1 \quad \forall x_i \in 3B
 \end{equation} 
 \begin{equation} 
-\forall x \in 1B:  \sum_{i = 1}^{N} x_{i} \geq 1 
+\sum_{i = 1}^{N} x_{i} \geq 1 \quad \forall x_i \in 1B
 \end{equation}
 \begin{equation} 
-\forall x \in SS:  \sum_{i = 1}^{N} x_{i} \geq 1 
+\sum_{i = 1}^{N} x_{i} \geq 1 \quad \forall x_i \in SS
 \end{equation}
 \begin{equation} 
-\forall x \in C:  \sum_{i = 1}^{N} x_{i} = 2 
+\sum_{i = 1}^{N} x_{i} = 2 \quad \forall x_i \in C
 \end{equation}
 \begin{equation}
-\forall x \in DH:  \sum_{i = 1}^{N} x_{i} = 1 
+\sum_{i = 1}^{N} x_{i} = 1 \quad \forall x_i \in DH
 \end{equation}
 \begin{equation} 
-\forall x \in IF:  \sum_{i = 1}^{N} x_{i} = 5 
+\sum_{i = 1}^{N} x_{i} = 5 \quad \forall x_i \in IF
 \end{equation}
 \begin{equation} 
 \sum_{i = 1}^{N} x_{i}  = 5 \quad \forall x_i \in OF 
@@ -193,7 +193,7 @@ It is surprising how few players are on the same actual and optimal team in Tabl
 
 \section{Limitations}
 
-There are a number of limitations for this work. The metric JB is an imperfect measure of player performance. Teams know \emph{ex-ante} how much they will pay a player for the season, but they do not know what the player's performance will be prior to the season. We also use data only for the 2021 season and thus only have 30 data points for teams. It is possible that the relationship between JB and salary varies by season, and that is left as an area for future work. 
+There are a number of limitations for this work. The metric JB is an imperfect measure of player performance. Teams know \emph{ex-ante} how much they will pay a player for the season, but they do not know what the player's performance will be prior to the season. We also use data only for the 2021 season and thus only have 30 data points for teams. It is possible that the relationship between JB and salary varies by season, and that is left as an area for future work. Furthermore, we have assumed that all players are currently available on the free agent market. This assumption is clearly unrealistic since most of the players who are selected for the optimal teams are currently under contract with particular MLB teams. 
 
 \newpage
 
