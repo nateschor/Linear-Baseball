@@ -7,7 +7,6 @@
 \usepackage{hyperref}
 \usepackage{xcolor}
 \usepackage{float}
-
 \usepackage{booktabs}
 \usepackage{longtable}
 \usepackage{array}
@@ -205,6 +204,8 @@ There are a number of limitations for this work. The metric JB is an imperfect m
 
 \section{Appendix}
 
+\subsection{Figures}
+
 \begin{figure}[h]
 \caption{Histogram of Salary for Players with Salary $> \$0$}
 \label{fig:salary_hist}
@@ -212,11 +213,529 @@ There are a number of limitations for this work. The metric JB is an imperfect m
 \includegraphics[width=0.7\paperwidth, scale=1.25]{salary_hist.png}
 \end{figure}
 
+\newpage
 \begin{figure}[h]
 \caption{Histogram of JEFFBAGWELL for Players with Salary $> \$0$}
 \label{fig:bwar_hist}
 \centering
 \includegraphics[width=0.7\paperwidth, scale=1.25]{war_hist.png}
 \end{figure}
+
+\newpage
+
+\subsection{Code}
+
+All of the replication files for this paper can be found at \url{https://github.com/nateschor/Linear-Baseball}
+
+\begin{singlespace}
+\begin{verbatim}
+
+00_ingest_data.R
+
+pacman::p_load(
+  tidyverse,
+  fst
+)
+
+df_raw <- read_csv("https://raw.githubusercontent.com/NeilPaine538/MLB-WAR-data-historical/master/jeffbagwell_war_historical.csv") %>% 
+  glimpse()
+
+write_fst(df_raw, "data/raw/all_data.fst")
+
+df_payroll <- data.frame(
+  stringsAsFactors = FALSE,
+       check.names = FALSE,
+              Club = c("Dodgers","Yankees","Mets",
+                       "Phillies","Astros","R. Sox","Padres","Angels",
+                       "Cardinals","Nationals","Giants","B. Jays","Cubs","Braves",
+                       "W. Sox","Reds","Twins","Rockies","Brewers",
+                       "Rangers","D-Backs","Royals","Mariners","A's","Tigers",
+                       "Rays","Marlins","Orioles","Guardians","Pirates"),
+            `2021` = c("$262,108,948","$203,628,978",
+                       "$198,818,899","$192,366,818","$189,586,134",
+                       "$187,356,913","$184,125,634","$182,925,936","$168,923,070",
+                       "$168,252,361","$165,869,140","$152,261,601",
+                       "$152,189,618","$148,497,447","$141,908,402","$131,309,602",
+                       "$125,983,176","$119,908,394","$105,991,594",
+                       "$104,310,488","$99,951,436","$94,475,853","$93,650,276",
+                       "$90,402,244","$86,047,409","$76,856,333","$60,877,424",
+                       "$59,054,021","$53,010,498","$50,337,389"),
+            `2019` = c("$205,147,830","$225,978,235",
+                       "$146,217,185","$160,974,755","$169,831,987",
+                       "$228,403,210","$104,000,709","$165,595,376","$178,872,485",
+                       "$205,283,436","$182,810,115","$120,288,261",
+                       "$220,307,173","$136,147,636","$97,304,607","$135,364,998",
+                       "$125,205,980","$151,889,647","$132,645,682",
+                       "$135,307,635","$109,903,547","$101,984,743","$139,064,933",
+                       "$95,733,594","$117,097,633","$67,443,534","$75,671,476",
+                       "$82,784,110","$123,127,347","$78,286,587"),
+            Change = c("$56,961,118","($22,349,257)",
+                       "$52,601,714","$31,392,063","$19,754,147",
+                       "($41,046,297)","$80,124,925","$17,330,560","($9,949,415)",
+                       "($37,031,075)","($16,940,975)","$31,973,340",
+                       "($68,117,555)","$12,349,811","$44,603,795","($4,055,396)",
+                       "$777,196","($31,981,253)","($26,654,088)","($30,997,147)",
+                       "($9,952,111)","($7,508,890)","($45,414,657)",
+                       "($5,331,350)","($31,050,224)","$9,412,799","($14,794,052)",
+                       "($23,730,089)","($70,116,849)","($27,949,198)"),
+         `%.(+/-)` = c("28%","-10%","36%","20%",
+                       "12%","-18%","77%","10%","-6%","-18%","-9%","27%",
+                       "-31%","9%","46%","-3%","1%","-21%","-20%","-23%",
+                       "-9%","-7%","-33%","-6%","-27%","14%","-20%",
+                       "-29%","-57%","-36%")
+) %>% 
+  select(Team = Club, Payroll = `2021`) %>% 
+  mutate(
+    Payroll = str_sub(Payroll, 2, -1),
+    Payroll = str_remove_all(Payroll, ","),
+    Payroll = as.double(Payroll)
+  )
+
+write_csv(df_payroll, "data/derived/payroll_2021.csv")
+
+01_prepare_player_data.R
+
+pacman::p_load(
+  tidyverse,
+  fst
+)
+
+df_2021 <- read_fst("data/raw/all_data.fst") %>% 
+  filter(year_ID == 2021) %>% 
+  glimpse()
+
+# Salary ------------------------------------------------------------------
+
+df_salary <- df_2021 %>% 
+  group_by(player_name) %>% 
+  summarize(
+    salary = sum(salary, na.rm = TRUE),
+    bwar = sum(bwar162, na.rm = TRUE),
+    pwar = sum(pwar162, na.rm = TRUE)
+  ) %>% 
+  filter(
+    if_all(c(salary, bwar, pwar), ~ !is.na(.))
+  ) %>% 
+  print()
+
+# Position ---------------------------------------------------------------
+
+df_pitcher_position <- df_2021 %>% 
+  select(player_name, starts, g_pitch) %>% 
+  filter(
+    if_all(c(starts, g_pitch), ~ !is.na(.))
+  ) %>%
+  group_by(player_name) %>% 
+  summarize(
+    across(everything(), ~ sum(.))
+  ) %>% 
+  transmute(
+    player_name,
+    position = if_else(starts / g_pitch >= .5, "SP", "RP")
+  ) %>% 
+  filter(player_name != "Shohei Ohtani") %>% 
+  print()
+
+df_fielder_position <- df_2021 %>% 
+  select(player_name, starts_with("gms")) %>% 
+  group_by(player_name) %>% 
+  summarize(
+    across(everything(), ~ sum(.))
+  ) %>% 
+  ungroup() %>% 
+  pivot_longer(., -player_name, 
+               names_to = "position", 
+               values_to = "games_played", 
+               names_prefix = "gms_") %>%
+  filter(position != "OF") %>% 
+  group_by(player_name) %>% 
+  slice_max(games_played, with_ties = FALSE, n = 1) %>% 
+  ungroup() %>%
+  filter(position %in% c("C", "1B", "2B", "3B", "SS", "CF", "LF", "RF", "DH")) %>%
+  select(player_name, position) %>% 
+  anti_join(df_pitcher_position, by = "player_name") %>% 
+  print()
+
+df_position <- bind_rows(df_fielder_position, df_pitcher_position)
+
+check_unique_players <- df_position %>% 
+  count(player_name) %>% 
+  slice_max(n, with_ties = FALSE) %>% 
+  pull(n)
+
+stopifnot("Each player should only occur once in dataset" = check_unique_players == 1)
+
+# Team --------------------------------------------------------------------
+
+df_team <- df_2021 %>% 
+  select(player_name, team_ID, stint_ID, starts_with("gms")) %>% 
+  pivot_longer(., starts_with("gms"), 
+               names_to = "position", values_to = "games", names_prefix = "gms_") %>% 
+  select(-position) %>% 
+  group_by(player_name, team_ID, stint_ID) %>% 
+  summarize(
+    games = sum(games)
+  ) %>% 
+  group_by(player_name) %>% 
+  slice_max(games, with_ties = FALSE) %>% 
+  ungroup() %>% 
+  select(player_name, team = team_ID)
+
+
+# Merged Dataset ----------------------------------------------------------
+
+df <- list(df_salary, df_position, df_team) %>% 
+  reduce(full_join, by = "player_name") %>% 
+  filter(
+    if_all(everything(), ~ !is.na(.))
+  ) %>% 
+  mutate(
+    grouped_position = case_when(
+      position %in% c("1B", "2B", "SS", "3B") ~ "IF",
+      position %in% c("LF", "CF", "RF") ~ "OF",
+      TRUE ~ position
+    ),
+    position = if_else(player_name == "Anthony Rizzo", "1B", position),
+    grouped_position = if_else(player_name == "Anthony Rizzo", "IF", grouped_position)
+  ) %>% 
+  filter(salary > 0) %>%  
+  pivot_longer(., c(bwar, pwar), names_to = "war_type", values_to = "war_value") %>% 
+  filter((grouped_position %in% c("SP", "RP") & war_type == "pwar") |
+           (! grouped_position %in% c("SP", "RP") & war_type == "bwar")) %>%
+  select(-war_type) %>% 
+  print()
+
+write_csv(df, "data/derived/merged_players.csv")
+ 
+02_solve_linear_program.R
+
+
+pacman::p_load(
+  tidyverse,
+  lpSolve
+)
+
+df_players <- read_csv("data/derived/merged_players.csv") 
+
+df_payroll <- read_csv("data/derived/payroll_2021.csv")
+
+num_players <- nrow(df_players)
+
+Create_Individual_Position_Indicator <- function(pos) {
+  
+  if_else(df_players %>% pull(position) == pos, 1, 0)
+}
+
+Create_Grouped_Position_Indicator <- function(pos) {
+  
+  if_else(df_players %>% pull(grouped_position) == pos, 1, 0)
+}
+
+
+Solve_Team_LP <- function(team) {
+  
+  team_salary <- df_payroll %>% 
+    filter(Team == team) %>% 
+    pull(Payroll)
+  
+  constraints <- rbind(
+    rep(1, num_players),
+    Create_Individual_Position_Indicator("SP"),
+    Create_Individual_Position_Indicator("RP"),
+    Create_Individual_Position_Indicator("CF"),
+    Create_Individual_Position_Indicator("RF"),
+    Create_Individual_Position_Indicator("LF"),
+    Create_Individual_Position_Indicator("2B"),
+    Create_Individual_Position_Indicator("3B"),
+    Create_Individual_Position_Indicator("1B"),
+    Create_Individual_Position_Indicator("SS"),
+    Create_Individual_Position_Indicator("C"),
+    Create_Individual_Position_Indicator("DH"),
+    Create_Grouped_Position_Indicator("IF"),
+    Create_Grouped_Position_Indicator("OF"),
+    df_players$salary
+    
+  )
+  
+    objective <- df_players$war_value
+    signs <- c(
+      rep("==", 3),
+      rep(">=", 7),
+      rep("==", 4),
+      "<="
+    )
+  
+  constraint_rhs <- c(25, 
+                      5,
+                      7,
+                      1,
+                      1,
+                      1,
+                      1,
+                      1,
+                      1,
+                      1,
+                      2,
+                      1,
+                      5,
+                      5,
+                      team_salary)
+  
+  model <- lp("max", objective, constraints, signs, constraint_rhs, 
+              all.bin = TRUE,
+              compute.sens = 1)
+  
+  solution <- model$solution
+  
+  df_solution <- df_players %>% 
+    slice(which(solution == 1)) %>% 
+    arrange(desc(war_value))
+  
+  return(df_solution)
+}
+
+df_payroll <- df_payroll %>% 
+  mutate(
+    team_id = row_number() %>% as.character()
+  )
+
+df_lp_solved <- map_dfr(df_payroll$Team, ~ Solve_Team_LP(.), .id = "team_id") %>% 
+  left_join(., df_payroll, by = "team_id") %>% 
+  select(-team_id) %>% 
+  mutate(
+    optimal_team = case_when(
+      Team == "A's" ~ "OAK", 
+      Team == "Angels" ~ "LAA", 
+      Team == "Astros" ~ "HOU", 
+      Team == "B. Jays" ~ "TOR", 
+      Team == "Braves" ~ "ATL", 
+      Team == "Brewers" ~ "MIL", 
+      Team == "Cardinals" ~ "STL", 
+      Team == "Cubs" ~ "CHC", 
+      Team == "D-Backs" ~ "ARI", 
+      Team == "Dodgers" ~ "LAD", 
+      Team == "Giants" ~ "SFG", 
+      Team == "Guardians" ~ "CLE", 
+      Team == "Mariners" ~ "SEA", 
+      Team == "Marlins" ~ "MIA", 
+      Team == "Mets" ~ "NYM", 
+      Team == "Nationals" ~ "WSN", 
+      Team == "Orioles" ~ "BAL", 
+      Team == "Padres" ~ "SDP", 
+      Team == "Phillies" ~ "PHI", 
+      Team == "Pirates" ~ "PIT", 
+      Team == "R. Sox" ~ "BOS", 
+      Team == "Rangers" ~ "TEX", 
+      Team == "Rays" ~ "TBR", 
+      Team == "Reds" ~ "CIN", 
+      Team == "Rockies" ~ "COL", 
+      Team == "Royals" ~ "KCR", 
+      Team == "Tigers" ~ "DET", 
+      Team == "Twins" ~ "MIN", 
+      Team == "W. Sox" ~ "CHW", 
+      Team == "Yankees" ~ "NYY"
+    )
+) %>% 
+  rename(actual_team = team) %>% 
+  select(-Team) %>% 
+  print()
+
+write_csv(df_lp_solved, "data/derived/lp_solved.csv")
+
+03_create_figures_and_tables.R
+
+
+pacman::p_load(
+  tidyverse,
+  cowplot,
+  kableExtra
+)
+
+# Data --------------------------------------------------------------------
+
+df_players <- read_csv("data/derived/merged_players.csv") %>% 
+  filter(salary > 0) %>% 
+  print()
+
+df_lp <- read_csv("data/derived/lp_solved.csv") %>% 
+  print()
+
+# Plots -------------------------------------------------------------------
+
+p_salary_hist <- ggplot(df_players, aes(x = salary)) +
+  geom_histogram(fill = "blue", color = "black", bins = 50) +
+  scale_x_continuous(label = scales::dollar, name = "Salary") +
+  scale_y_continuous(expand = expansion(0, 0), name = "Count") +
+  theme_minimal() +
+  theme(
+    panel.grid.minor.x = element_blank()
+  )
+
+p_war <- ggplot(df_players, aes(x = war_value)) +
+  geom_histogram(fill = "blue", color = "black", bins = 30) +
+  scale_x_continuous(name = "JEFFBAGWELL") +
+  scale_y_continuous(expand = expansion(0, 0), name = "Count") +
+  theme_minimal() +
+  theme(
+    panel.grid.minor.x = element_blank()
+  )
+
+Reorder_By_Median <- function(salary_or_war) {
+  
+  df_players %>% 
+    group_by(position) %>% 
+    summarize(
+      metric_median = median({{salary_or_war}})
+    ) %>% 
+    arrange(metric_median) %>% 
+    pull(position) %>% 
+    as_factor(., )
+}
+
+factor_salary <- Reorder_By_Median(salary) 
+factor_war <- Reorder_By_Median(war_value)
+
+p_salary_position <- ggplot(df_players, aes(x = salary, y = factor(position, levels = factor_salary))) +
+  geom_boxplot(fill = "red") +
+  scale_x_continuous(label = scales::dollar, name = "Salary") +
+  scale_y_discrete(expand = expansion(0, 0), name = "Position") +
+  theme_minimal() +
+  theme(
+    panel.grid.minor.x = element_blank()
+  ) 
+
+p_war_position <- ggplot(df_players, aes(x = war_value, y = factor(position, levels = factor_war))) +
+  geom_boxplot(fill = "red") +
+  scale_x_continuous(name = "JEFFBAGWELL") +
+  scale_y_discrete(expand = expansion(0, 0), name = "Position") +
+  theme_minimal() +
+  theme(
+    panel.grid.minor.x = element_blank()
+  ) 
+
+df_actual_salary_war <- df_players %>% 
+  group_by(team) %>% 
+  summarize(
+    total_salary = sum(salary),
+    total_war = sum(war_value)
+  )
+
+df_optimal_salary_war <- df_lp %>% 
+  group_by(optimal_team) %>% 
+  summarize(
+    total_salary = sum(salary),
+    total_war = sum(war_value)
+  )
+
+Plot_WAR_VS_SALARY <- function(actual_or_optimal) {
+  
+  line_color <- switch (actual_or_optimal,
+    "actual" = "blue",
+    "optimal" = "red"
+  )
+  
+  plotting_data <- switch (actual_or_optimal,
+    "actual" = df_actual_salary_war,
+    "optimal" = df_optimal_salary_war
+  )
+  
+  ggplot(data = plotting_data) +
+    geom_smooth(aes(x = total_salary, y = total_war), color = line_color, se = FALSE) +
+    geom_point(aes(x = total_salary, y = total_war)) +
+    theme_minimal() +
+    scale_x_continuous(label = scales::dollar) + #, breaks = seq(0, 300E6, 50E6)) +
+    labs(
+      x = "Team Total Dollars Spent",
+      y = "Team Total JEFFBAGWELL"
+    ) +
+    theme(
+      panel.grid = element_blank(),
+      axis.text.x = element_text(face = "bold", size = 10)
+    )
+}
+
+p_actual_war_salary <- Plot_WAR_VS_SALARY("actual")
+p_optimal_war_salary <- Plot_WAR_VS_SALARY("optimal")
+
+p_war_salary_cowplot <- plot_grid(p_actual_war_salary, p_optimal_war_salary, 
+          labels = c("Actual Team Values", "Optimal Team Values"))
+
+# Save Plots --------------------------------------------------------------
+
+path_plots <- "paper/figures/"
+
+ggsave(paste0(path_plots, "salary_hist.png"), p_salary_hist)
+ggsave(paste0(path_plots, "war_hist.png"), p_war)
+ggsave(paste0(path_plots, "salary_position_boxplots.png"), p_salary_position)
+ggsave(paste0(path_plots, "war_position_boxplots.png"), p_war_position)
+ggsave(paste0(path_plots, "bwar_salary_scatter_cowplot.png"), p_war_salary_cowplot, 
+       width = 3500, height = 1500, units = "px")
+
+# Tables ------------------------------------------------------------------
+
+path_tables <- "paper/tables/"
+
+df_lp %>% 
+  count(player_name, sort = TRUE) %>% 
+  rename(
+    "Player" = player_name,
+    "Teams Picked" = n
+  ) %>% 
+  kable(., format = "latex", caption = "Number of teams (max of 30) selecting a given player for their optimal roster", 
+        escape = TRUE, align = c("cc")) %>% 
+  kable_styling(., latex_options = "striped", font_size = 7) %>% 
+  column_spec(., 1, border_left = TRUE) %>% 
+  column_spec(., 2, border_right = TRUE) %>% 
+  save_kable(., paste0(path_tables, "teams_picked.tex"))
+
+v_teams <- df_players %>% 
+  pull(team) %>% 
+  unique()
+
+df_optimal_equal_actual <- df_lp %>% 
+  filter(optimal_team == actual_team) %>% 
+  count(optimal_team, sort = TRUE)
+
+v_teams_with_0 <- setdiff(v_teams, df_optimal_equal_actual$optimal_team)
+
+df_optimal_equal_actual <- df_optimal_equal_actual %>% 
+  add_row(
+    optimal_team = v_teams_with_0,
+    n = 0
+  ) %>% 
+  rename(
+    Team = optimal_team,
+    "Number of Players" = n
+  )
+        
+kable(df_optimal_equal_actual, format = "latex", align = c("lc"),
+      caption = "For each team, the number of players selected for their optimal team who are also on their actual team") %>% 
+  kable_styling(., latex_options = "striped") %>% 
+  column_spec(., 1, border_left = TRUE) %>% 
+  column_spec(., 2, width = "10em", border_right = TRUE) %>% 
+  save_kable(., paste0(path_tables, "num_players_actual_and_optimal.tex"))        
+  
+Save_Optimal_Roster <- function(team) {
+  
+  df_lp %>% 
+    filter(optimal_team == team) %>% 
+    select(
+      `Actual Team` = actual_team,
+      Player = player_name,
+      Position = position, 
+      JEFFBAGWELL = war_value,
+      Salary = salary
+    ) %>% 
+    kable(., format = "latex", caption = paste("Optimal team for", team), escape = TRUE) %>% 
+    kable_styling(., bootstrap_options = "striped") %>% 
+    save_kable(., paste0(path_tables, team, "_optimal_team.tex"))  
+}
+
+walk(v_teams, ~ Save_Optimal_Roster(.))
+
+\end{verbatim}
+
+
+\end{singlespace}
 
 \end{document}
