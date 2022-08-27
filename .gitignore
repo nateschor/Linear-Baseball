@@ -8,6 +8,11 @@
 *.out
 *.synctex.gz
 *.toc
+*.blg
+*.bbl
+
+# PowerPoints
+*.pptx
 
 # Session Data files
 .RData
