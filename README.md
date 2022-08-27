@@ -11,6 +11,7 @@ Constraints:
   - 2 catchers 
   - 5 infielders (at least 1 1B, 1 2B, 1 3B, and 1 SS)
   - 5 outfielders (at least 1 LF, 1 CF, and 1 RF)
+  - 1 designated hitter
 - each team can only spend as much as they actually spent in 2021
     - [Forbes](https://www.forbes.com/sites/maurybrown/2021/12/22/2021-mlb-final-player-payrolls-show-168m-drop-from-last-full-season-heres-every-team/?sh=674b3e663999)
     
