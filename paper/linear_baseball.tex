@@ -34,18 +34,25 @@
 \doublespacing
 \begin{document}
 
+\providecommand{\keywords}[1]
+{
+  \small	
+  \textbf{\textit{Keywords---}} #1
+}
+
 \maketitle
-\begin{singlespace}
-\tableofcontents
-\end{singlespace}
-
+\begin{abstract}
+Major League Baseball teams face trade-offs in building talented teams without overspending. Teams need to make difficult choices about which players to roster, how many players to keep at each position, and how much to pay those players. This paper provides insights into managing these trade-offs thorough setting up a constrained optimization problem that seeks to maximize total team performance, subject to player's salary and position constraints. 
+\end{abstract}
+\keywords{MLB, Constrained Optimization, Roster Construction}
 \newpage
-
+\tableofcontents
+\newpage
 \section{Introduction}
 
 The purpose of this research is to investigate the relationship between salary and team performance in Major League Baseball (MLB). We do this by looking at actual outcomes for MLB teams in 2021 and compare those results to optimal rosters using linear programming. Our goal is to analyze the gap between current team performance and their potential optimal performance. 
 
-We begin with 2021 salary data for each MLB team. This data is supplemented with each player's 2021 salary, team, position, and JEFFBAGWELL (our performance metric, abbreviated JB. JB stands for \textbf{J}oint \textbf{E}stimate \textbf{F}eaturing \textbf{F}anGraphs and \textbf{B}-R \textbf{A}ggregated to \textbf{G}enerate \textbf{W}ar, \textbf{Equally} \textbf{L}eveling \textbf{L}ists \cite{JB}. WAR is a metric that quantifies each player's value in terms of how many wins they provide \cite{WAR}. Next, we seek to maximize JB for each of the 30 teams subject to salary and player position constraints, and visualize the results. Lastly, we discuss the implications of the gap between teams' current roster and their optimal roster
+We begin with 2021 salary data for each MLB team. This data is supplemented with each player's 2021 salary, team, position, and JEFFBAGWELL (our performance metric, abbreviated JB. JB stands for \textbf{J}oint \textbf{E}stimate \textbf{F}eaturing \textbf{F}anGraphs and \textbf{B}-R \textbf{A}ggregated to \textbf{G}enerate \textbf{W}ar, \textbf{E}qually \textbf{L}eveling \textbf{L}ists \cite{JB}. WAR is a metric that quantifies each player's value in terms of how many wins they provide \cite{WAR}. Next, we seek to maximize JB for each of the 30 teams subject to salary and player position constraints, and visualize the results. Lastly, we discuss the implications of the gap between teams' current roster and their optimal roster.
 
 \section{Literature Review}
 
@@ -73,7 +80,7 @@ In Figure \ref{fig:salary_position_boxplot}, we see how salary varies by positio
 It is interesting to compare this with Figure \ref{fig:war_position_boxplot}. C and RF have the lowest median values in both. However, IF and OF positions are much closer together in the JB plot. This suggests a potential discrepancy between how much players are valued and how much they are paid--if players were perfectly paid according to their value, we would expect the position ordering on the y-axis of the two graphs to be identical.  
 
 \begin{figure}[H]
-\caption{Boxplot of JEFFBAGWELL by Position}
+\caption{Boxplot of JEFFBAGWELL (for Players with Salary $> \$0$) by Position}
 \label{fig:war_position_boxplot}
 \centering
 \includegraphics[width=0.7\paperwidth, scale=1.25]{war_position_boxplots.png}
@@ -81,7 +88,7 @@ It is interesting to compare this with Figure \ref{fig:war_position_boxplot}. C 
 
 \subsection{Solving the Optimization Problem}
 
-The decision variables ($x_{i}$) are which MLB players will be selected for each team. $x_{i}$ is a binary variable that equal 1 if player \emph{i} is chosen, and 0 if they are not. The objective function is to maximize the JB for each of the 30 teams (T):
+The decision variables ($x_{i}$) are which MLB players will be selected for each team \emph{T}. $x_{i}$ is a binary variable that equals 1 if player \emph{i} is chosen, and 0 if they are not. The objective function is to maximize the JB $\forall T \in {1, 2, ..., 29, 30}$:
 \begin{equation}
 \sum_{i = 1}^{N} x_{i} * JB_{i}
 \end{equation} where \emph{N} is the total number of eligible players in 2021.
@@ -128,24 +135,26 @@ subject to the following constraints:
 \forall x \in IF:  \sum_{i = 1}^{N} x_{i} = 5 
 \end{equation}
 \begin{equation} 
-\forall x \in OF:  \sum_{i = 1}^{N} x_{i} = 5
+\sum_{i = 1}^{N} x_{i}  = 5 \quad \forall x_i \in OF 
 \end{equation}
 \begin{equation}
 \sum_{i = 1}^{N} x_{i} * x_{salary} \leq T_{salary}
 \end{equation}
 
-Equation (2) constrains each team to have exactly 25 players. Equations (3)-(15) stipulate the number of players at each position and the total number of players allowed for grouped positions. (16) requires that each team spend no more on players than they did in the actual 2021 season. 
+Equation (2) constrains each team to have exactly 25 players. Equations (3) - (15) stipulate the number of players at each position and the total number of players allowed for grouped positions.   (16) requires that each team spend no more on players than they did in the actual 2021 season. 
 
+\section{Computational Experiment and Results}
+
+We solve the constrained optimization problem for all 30 teams to generate each team's optimal 25 player roster. In Table 1, we see there are 5 players who are chosen for each team, and 18 players who are chosen more than 20 times. In Table 2, we see that teams have at most 3 players who were on both their actual and optimal teams. The modal amount of players to have on both the optimal and actual team is 0. 
+
+\label{tab:teams_picked}
+\input{tables/teams_picked.tex}
 
 %\begin{table}
 %\caption{Number of Players who are on both the Optimal and Actual Teams}
 \label{tab:optimal_and_actual}
 \input{tables/num_players_actual_and_optimal.tex}
 %\end{table}
-
-\section{Computational Experiment and Results}
-
-We solve the constrained optimization problem for all 30 teams to generate each team's optimal 25 player roster. In Table \ref{tab:optimal_and_actual}, we see there are 5 players who are chosen for each team, and 18 players who are chosen more than 20 times. In Table \ref{tab:teams_picked}, we see that teams have at most 3 players who were on both their actual and optimal teams. The modal amount of players to have on both the optimal and actual team is 0. 
 
 In Figure \ref{fig:cowplot}, we sum the salary and JB for each of the actual 30 teams' rosters' in the graph on the left, and we sum the salary and JB for each of the 30 optimized teams' rosters' on the right. Each point represents a team.
 
@@ -168,11 +177,9 @@ In Figure \ref{fig:cowplot}, we sum the salary and JB for each of the actual 30 
 
 \subsection{Actual vs. Optimal Plots}
 
-The shape of the two graphs in Figure \ref{fig:cowplot} is interesting. The points on the left are relatively scattered, but with a general upward trend--JB and dollars spent are positively correlated. With the smoother, we see that there is a roughly linear relationship up until the salary hits \$100,000. JB then \emph{decreases} up until \$150,000, where it then continues to increase in a concave upwards fashion.
+The shape of the two graphs in Figure \ref{fig:cowplot} is interesting. The points on the left are relatively scattered, but with a general upward trend--JB and dollars spent are positively correlated. With the smoother, we see that there is a roughly linear relationship up until the salary hits \$100,000,000. JB then \emph{decreases} up until \$150,000,000, where it then continues to increase in a concave upwards fashion.
 
-Nearly all the points on the right fall along a single curve that is almost entirely non-decreasing, and roughly linear up until around \$200,000. 
-
-Some takeaways from examining these two curves:
+Nearly all the points on the right fall along a single curve that is almost entirely non-decreasing, and roughly linear up until around \$200,000,000. Some takeaways from examining these two curves:
 \begin{singlespace}
 \begin{itemize}
 	\item{The marginal value of a player is non-constant}
@@ -183,40 +190,33 @@ Some takeaways from examining these two curves:
 
 \subsection{Actual vs. Optimal Table}
 
-It is surprising how few players are on the same actual and optimal team in \ref{tab:optimal_and_actual}. This table gives a rough sense of bargain star power for each team. Assuming that players are paid what they are worth (which often does not happen until free agency), the high costs might not offset the increase in JB. Teams are able to have the most desirable combination of high JB and low cost by developing or acquiring players \emph{before} they have attained star level, since they then pay a premium. 
+It is surprising how few players are on the same actual and optimal team in Table 2. This table gives a rough sense of bargain star power for each team. Assuming that players are paid what they are worth (which often does not happen until free agency), the high costs of having an elite player on the team might not offset the increase in JB. Teams are able to have the most desirable combination of high JB and low cost by developing or acquiring players \emph{before} they have attained star level, since they then pay a premium once the player is an established star. 
 
 \section{Limitations}
 
-There are a number of limitations for this work. The metric JB is an imperfect measure of player performance. Teams know \emph{ex ante} how much they will pay a player for the season, but they do not know what the player's performance will be prior to the season. We also use data only for the 2021 season and thus only have 30 data points for teams. It is possible that the relationship between JB and salary varies by season, and that is left as an area for future work. 
+There are a number of limitations for this work. The metric JB is an imperfect measure of player performance. Teams know \emph{ex-ante} how much they will pay a player for the season, but they do not know what the player's performance will be prior to the season. We also use data only for the 2021 season and thus only have 30 data points for teams. It is possible that the relationship between JB and salary varies by season, and that is left as an area for future work. 
 
-%\begin{figure}[h]
-%    \caption{Ontology for \emph{Hamilton}. \label{fig:ontology}}
-%    \centering
-%    \includegraphics[width=0.7\paperwidth, scale=1.25]{ontology.png}
-%\end{figure}
+\newpage
 
+\bibliography{references}
+\bibliographystyle{apalike}
 
+\newpage
 
 \section{Appendix}
 
-\begin{figure}[t]
-\caption{Histogram of Salary for Players with Salary $> 0$}
+\begin{figure}[h]
+\caption{Histogram of Salary for Players with Salary $> \$0$}
 \label{fig:salary_hist}
 \centering
 \includegraphics[width=0.7\paperwidth, scale=1.25]{salary_hist.png}
 \end{figure}
 
-\begin{figure}[t]
-\caption{Histogram of JEFFBAGWELL}
+\begin{figure}[h]
+\caption{Histogram of JEFFBAGWELL for Players with Salary $> \$0$}
 \label{fig:bwar_hist}
 \centering
 \includegraphics[width=0.7\paperwidth, scale=1.25]{war_hist.png}
 \end{figure}
-
-\label{tab:teams_picked}
-\input{tables/teams_picked.tex}
-
-\bibliography{references}
-\bibliographystyle{apalike}
 
 \end{document}
