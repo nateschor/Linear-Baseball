@@ -45,32 +45,32 @@
 
 The purpose of this research is to investigate the relationship between salary and team performance in Major League Baseball (MLB). We do this by looking at actual outcomes for MLB teams in 2021 and compare those results to optimal rosters using linear programming. Our goal is to analyze the gap between current team performance and their potential optimal performance. 
 
-We begin with 2021 salary data for each MLB team. This data is supplemented it with each player's 2021 salary, team, position, and JEFFBAGWELL (our performance metric, abbreviated JB). \textbf{SAY MORE ABOUT WHAT IT IS/WAR IS} Next, we seek to maximize JEFFBAGWELL for each of the 30 teams subject to salary and player position constraints, and visualize the results. 
+We begin with 2021 salary data for each MLB team. This data is supplemented with each player's 2021 salary, team, position, and JEFFBAGWELL (our performance metric, abbreviated JB. JB stands for \textbf{J}oint \textbf{E}stimate \textbf{F}eaturing \textbf{F}anGraphs and \textbf{B}-R \textbf{A}ggregated to \textbf{G}enerate \textbf{W}ar, \textbf{Equally} \textbf{L}eveling \textbf{L}ists \cite{JB}. WAR is a metric that quantifies each player's value in terms of how many wins they provide \cite{WAR}. Next, we seek to maximize JB for each of the 30 teams subject to salary and player position constraints, and visualize the results. Lastly, we discuss the implications of the gap between teams' current roster and their optimal roster
 
 \section{Literature Review}
 
-The relationship between spending and performance is common in both the public baseball discourse and in the baseball community (SABR). The book \emph{Moneyball} began the baseball revolution. One example of using linear programming in baseball is \textbf{R LINEAR PROGRAMMING LINK}. Other examples of linear programming in baseball are \textbf{FIND MORE EXAMPLES}. 
+The relationship between spending and performance is common in both the public baseball discourse and in the SABR\footnote{SABR is the Society for American Baseball Research, an organization dedicated to discovering objective baseball knowledge \url{https://sabr.org/}} baseball community. The book \emph{Moneyball} \cite{Moneyball} began the baseball revolution. One example of using linear programming in baseball is \cite{lp_R}. Another examples of linear programming in baseball is \cite{Adler99baseball}. An instance of linear programming in other sports is \cite{Aramouni2021}.
 
 \section{Methodology/Data}
 
 \subsection{Data Cleaning}
 
-To clean the player dataset, we first assign positions to each player. A player's position is characterized as the position they played most frequently during the season (if they played two positions an equal amount of times, their position was randomly assigned to one of the two positions). Player's with a \$0 salary or a missing salary are removed. A pitcher is classified as a Starting Pitcher (SP) if $\geq$ 50\% of their appearances were as a starter, and otherwise are classified as a Relief Pitcher (RP). Furthermore, First Basemen (1B), Second Basemen (2B), Third Basemen (3B), and Shortstops (SS) are classified as Infielders (IF). Left Fielders (LF), Center Fielders (CF), and Right Fielders (RF) are classified as Outfielders (OF). Catchers (C) and Designated Hitters (DH) are left as their own individual categories. 
+To clean the player dataset, we first assign positions to each player. A player's position is recorded as the position they played most frequently during the season (if they played two positions an equal amount of times, their position was randomly assigned to one of the two positions). Players with a \$0 salary or a missing salary are removed. A pitcher is classified as a Starting Pitcher (SP) if $\geq$ 50\% of their appearances were as a starter, and otherwise are classified as a Relief Pitcher (RP). Furthermore, First Basemen (1B), Second Basemen (2B), Third Basemen (3B), and Shortstops (SS) are classified as Infielders (IF). Left Fielders (LF), Center Fielders (CF), and Right Fielders (RF) are classified as Outfielders (OF). Catchers (C) and Designated Hitters (DH) are left as their own individual categories. 
 
-\subsection{Motivating Figures}
+\subsection{Salary and JEFFBAGWELL by Position}
 
 Baseball teams need to make important decisions about which players to have on their team, and how much to pay them. An interesting aspect is that each position is not equally valuable to creating a winning team, and, consequently, players at different positions have varying salaries (controlling for skill level). 
 
-In Figure \ref{fig:salary_position_boxplot}, we see how salary varies by position. The median salary for a starting pitcher is around \$5,000,000 while the median salary for a relief pitcher is closer to \$1,000,000. The salary distributions also vary drastically within infield and outfield positions. Starting Pitchers and Relief Pitchers also have the largest number of outliers.
+In Figure \ref{fig:salary_position_boxplot}, we see how salary varies by position. The median salary for a Starting Pitcher is around \$5,000,000 while the median salary for a Relief Pitcher is closer to \$1,000,000. The salary distributions also vary drastically within infield and outfield positions. Starting Pitchers and Relief Pitchers also have the largest number of outliers.
 
 \begin{figure}[H]
-\caption{Boxplot of Salary (for Players with Salary $> 0$) by Position}
+\caption{Boxplot of Salary (for Players with Salary $> \$0$) by Position}
 \label{fig:salary_position_boxplot}
 \centering
 \includegraphics[width=0.7\paperwidth, scale=1.25]{salary_position_boxplots.png}
 \end{figure}
 
-It is interesting to compare this with Figure \ref{fig:war_position_boxplot}. C and RF have the lowest median in both. However, IF and OF are much closer together. This suggests a potential discrepancy between how much players are valued and how much they are paid. 
+It is interesting to compare this with Figure \ref{fig:war_position_boxplot}. C and RF have the lowest median values in both. However, IF and OF positions are much closer together in the JB plot. This suggests a potential discrepancy between how much players are valued and how much they are paid--if players were perfectly paid according to their value, we would expect the position ordering on the y-axis of the two graphs to be identical.  
 
 \begin{figure}[H]
 \caption{Boxplot of JEFFBAGWELL by Position}
@@ -195,8 +195,7 @@ There are a number of limitations for this work. The metric JB is an imperfect m
 %    \includegraphics[width=0.7\paperwidth, scale=1.25]{ontology.png}
 %\end{figure}
 
-%\bibliography{references}
-%\bibliographystyle{apalike}
+
 
 \section{Appendix}
 
@@ -216,5 +215,8 @@ There are a number of limitations for this work. The metric JB is an imperfect m
 
 \label{tab:teams_picked}
 \input{tables/teams_picked.tex}
+
+\bibliography{references}
+\bibliographystyle{apalike}
 
 \end{document}
