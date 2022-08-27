@@ -25,7 +25,7 @@ p_salary_hist <- ggplot(df_players, aes(x = salary)) +
     panel.grid.minor.x = element_blank()
   )
 
-p_war <- ggplot(df_players, aes(x = bwar)) +
+p_war <- ggplot(df_players, aes(x = war_value)) +
   geom_histogram(fill = "blue", color = "black", bins = 30) +
   scale_x_continuous(name = "JEFFBAGWELL") +
   scale_y_continuous(expand = expansion(0, 0), name = "Count") +
@@ -34,12 +34,12 @@ p_war <- ggplot(df_players, aes(x = bwar)) +
     panel.grid.minor.x = element_blank()
   )
 
-Reorder_By_Median <- function(salary_or_bwar) {
+Reorder_By_Median <- function(salary_or_war) {
   
   df_players %>% 
     group_by(position) %>% 
     summarize(
-      metric_median = median({{salary_or_bwar}})
+      metric_median = median({{salary_or_war}})
     ) %>% 
     arrange(metric_median) %>% 
     pull(position) %>% 
@@ -47,7 +47,7 @@ Reorder_By_Median <- function(salary_or_bwar) {
 }
 
 factor_salary <- Reorder_By_Median(salary) 
-factor_bwar <- Reorder_By_Median(bwar)
+factor_war <- Reorder_By_Median(war_value)
 
 p_salary_position <- ggplot(df_players, aes(x = salary, y = factor(position, levels = factor_salary))) +
   geom_boxplot(fill = "red") +
@@ -58,7 +58,7 @@ p_salary_position <- ggplot(df_players, aes(x = salary, y = factor(position, lev
     panel.grid.minor.x = element_blank()
   ) 
 
-p_war_position <- ggplot(df_players, aes(x = bwar, y = factor(position, levels = factor_bwar))) +
+p_war_position <- ggplot(df_players, aes(x = war_value, y = factor(position, levels = factor_war))) +
   geom_boxplot(fill = "red") +
   scale_x_continuous(name = "JEFFBAGWELL") +
   scale_y_discrete(expand = expansion(0, 0), name = "Position") +
@@ -67,21 +67,21 @@ p_war_position <- ggplot(df_players, aes(x = bwar, y = factor(position, levels =
     panel.grid.minor.x = element_blank()
   ) 
 
-df_actual_salary_bwar <- df_players %>% 
+df_actual_salary_war <- df_players %>% 
   group_by(team) %>% 
   summarize(
     total_salary = sum(salary),
-    total_bwar = sum(bwar)
+    total_war = sum(war_value)
   )
 
-df_optimal_salary_bwar <- df_lp %>% 
+df_optimal_salary_war <- df_lp %>% 
   group_by(optimal_team) %>% 
   summarize(
     total_salary = sum(salary),
-    total_bwar = sum(bwar)
+    total_war = sum(war_value)
   )
 
-Plot_BWAR_VS_SALARY <- function(actual_or_optimal) {
+Plot_WAR_VS_SALARY <- function(actual_or_optimal) {
   
   line_color <- switch (actual_or_optimal,
     "actual" = "blue",
@@ -89,28 +89,29 @@ Plot_BWAR_VS_SALARY <- function(actual_or_optimal) {
   )
   
   plotting_data <- switch (actual_or_optimal,
-    "actual" = df_actual_salary_bwar,
-    "optimal" = df_optimal_salary_bwar
+    "actual" = df_actual_salary_war,
+    "optimal" = df_optimal_salary_war
   )
   
   ggplot(data = plotting_data) +
-    geom_smooth(aes(x = total_salary, y = total_bwar), color = line_color, se = FALSE) +
-    geom_point(aes(x = total_salary, y = total_bwar)) +
+    geom_smooth(aes(x = total_salary, y = total_war), color = line_color, se = FALSE) +
+    geom_point(aes(x = total_salary, y = total_war)) +
     theme_minimal() +
-    scale_x_continuous(label = scales::dollar, breaks = seq(0, 300E6, 50E6)) +
+    scale_x_continuous(label = scales::dollar) + #, breaks = seq(0, 300E6, 50E6)) +
     labs(
       x = "Team Total Dollars Spent",
       y = "Team Total JEFFBAGWELL"
     ) +
     theme(
-      panel.grid = element_blank()
+      panel.grid = element_blank(),
+      axis.text.x = element_text(face = "bold", size = 10)
     )
 }
 
-p_actual_bwar_salary <- Plot_BWAR_VS_SALARY("actual")
-p_optimal_bwar_salary <- Plot_BWAR_VS_SALARY("optimal")
+p_actual_war_salary <- Plot_WAR_VS_SALARY("actual")
+p_optimal_war_salary <- Plot_WAR_VS_SALARY("optimal")
 
-p_bwar_salary_cowplot <- plot_grid(p_actual_bwar_salary, p_optimal_bwar_salary, 
+p_war_salary_cowplot <- plot_grid(p_actual_war_salary, p_optimal_war_salary, 
           labels = c("Actual Team Values", "Optimal Team Values"))
 
 # Save Plots --------------------------------------------------------------
@@ -121,7 +122,8 @@ ggsave(paste0(path_plots, "salary_hist.png"), p_salary_hist)
 ggsave(paste0(path_plots, "war_hist.png"), p_war)
 ggsave(paste0(path_plots, "salary_position_boxplots.png"), p_salary_position)
 ggsave(paste0(path_plots, "war_position_boxplots.png"), p_war_position)
-ggsave(paste0(path_plots, "bwar_salary_scatter_cowplot.png"), p_bwar_salary_cowplot)
+ggsave(paste0(path_plots, "bwar_salary_scatter_cowplot.png"), p_war_salary_cowplot, 
+       width = 3500, height = 1500, units = "px")
 
 # Tables ------------------------------------------------------------------
 
@@ -133,8 +135,11 @@ df_lp %>%
     "Player" = player_name,
     "Teams Picked" = n
   ) %>% 
-  kable(., format = "latex", caption = "Number of teams(max of 30) selecting player for their optimal roster") %>% 
-  kable_styling(., bootstrap_options = "striped") %>% 
+  kable(., format = "latex", caption = "Number of teams (max of 30) selecting a given player for their optimal roster", 
+        escape = TRUE, align = c("cc")) %>% 
+  kable_styling(., latex_options = "striped", font_size = 7) %>% 
+  column_spec(., 1, border_left = TRUE) %>% 
+  column_spec(., 2, border_right = TRUE) %>% 
   save_kable(., paste0(path_tables, "teams_picked.tex"))
 
 v_teams <- df_players %>% 
@@ -154,11 +159,14 @@ df_optimal_equal_actual <- df_optimal_equal_actual %>%
   ) %>% 
   rename(
     Team = optimal_team,
-    "Number of Players on both Actual and Optimal Team" = n
+    "Number of Players" = n
   )
         
-kable(df_optimal_equal_actual, format = "latex") %>% 
-  kable_styling(., bootstrap_options = "striped") %>% 
+kable(df_optimal_equal_actual, format = "latex", align = c("lc"),
+      caption = "For each team, the number of players selected for their optimal team who are also on their actual team") %>% 
+  kable_styling(., latex_options = "striped") %>% 
+  column_spec(., 1, border_left = TRUE) %>% 
+  column_spec(., 2, width = "10em", border_right = TRUE) %>% 
   save_kable(., paste0(path_tables, "num_players_actual_and_optimal.tex"))        
   
 Save_Optimal_Roster <- function(team) {
@@ -169,10 +177,10 @@ Save_Optimal_Roster <- function(team) {
       `Actual Team` = actual_team,
       Player = player_name,
       Position = position, 
-      JEFFBAGWELL = bwar,
+      JEFFBAGWELL = war_value,
       Salary = salary
     ) %>% 
-    kable(., format = "latex", caption = paste("Optimal team for", team)) %>% 
+    kable(., format = "latex", caption = paste("Optimal team for", team), escape = TRUE) %>% 
     kable_styling(., bootstrap_options = "striped") %>% 
     save_kable(., paste0(path_tables, team, "_optimal_team.tex"))  
 }

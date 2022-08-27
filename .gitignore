@@ -2,6 +2,18 @@
 .Rhistory
 .Rapp.history
 
+# Interal LaTeX files
+*.aux
+*.log
+*.out
+*.synctex.gz
+*.toc
+*.blg
+*.bbl
+
+# PowerPoints
+*.pptx
+
 # Session Data files
 .RData
 *.fst

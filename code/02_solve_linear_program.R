@@ -4,17 +4,7 @@ pacman::p_load(
   lpSolve
 )
 
-df_players <- read_csv("data/derived/merged_players.csv") %>% 
-  mutate(
-    grouped_position = case_when(
-      position %in% c("1B", "2B", "SS", "3B") ~ "IF",
-      position %in% c("LF", "CF", "RF") ~ "OF",
-      TRUE ~ position
-    ),
-    position = if_else(player_name == "Anthony Rizzo", "1B", position),
-    grouped_position = if_else(player_name == "Anthony Rizzo", "IF", grouped_position)
-  ) %>% 
-  filter(salary > 0)
+df_players <- read_csv("data/derived/merged_players.csv") 
 
 df_payroll <- read_csv("data/derived/payroll_2021.csv")
 
@@ -56,7 +46,7 @@ Solve_Team_LP <- function(team) {
     
   )
   
-    objective <- df_players$bwar
+    objective <- df_players$war_value
     signs <- c(
       rep("==", 3),
       rep(">=", 7),
@@ -88,7 +78,7 @@ Solve_Team_LP <- function(team) {
   
   df_solution <- df_players %>% 
     slice(which(solution == 1)) %>% 
-    arrange(desc(bwar))
+    arrange(desc(war_value))
   
   return(df_solution)
 }
