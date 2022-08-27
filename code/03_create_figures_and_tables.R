@@ -137,7 +137,7 @@ df_lp %>%
   ) %>% 
   kable(., format = "latex", caption = "Number of teams (max of 30) selecting a given player for their optimal roster", 
         escape = TRUE, align = c("cc")) %>% 
-  kable_styling(., latex_options = "striped") %>% 
+  kable_styling(., latex_options = "striped", font_size = 7) %>% 
   column_spec(., 1, border_left = TRUE) %>% 
   column_spec(., 2, border_right = TRUE) %>% 
   save_kable(., paste0(path_tables, "teams_picked.tex"))
